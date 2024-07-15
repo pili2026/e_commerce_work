@@ -23,7 +23,7 @@ class Order(BaseServiceModel):
 
 class CreateOrder(BaseServiceModel):
     id: UUID = AUTO_GEN_UUID4_FIELD
-    user_id: UUID = UUID("4a0e208c-72ea-4fbb-a59f-208be7208dc2")
+    user_id: UUID = UUID("be91692a-a0c9-42bd-a4fb-c8f7f3bae470")
     status: OrderStatusEnum = OrderStatusEnum.PROCESSING
 
 

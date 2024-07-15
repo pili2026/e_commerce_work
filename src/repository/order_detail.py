@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import ChunkedIteratorResult, Select, delete
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -86,7 +87,7 @@ class OrderDetailRepository:
 
         if not product:
             err_msg = f"No product found with product {product_name}."
-            raise AppError(message=err_msg, code=ErrorCode.NOT_FOUND)
+            raise HTTPException(detail=err_msg, status_code=404)
 
         if product.stock <= 0:
             err_msg = f"Product {product_name} is out of stock."

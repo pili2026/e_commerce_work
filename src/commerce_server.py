@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from graphql_api.schema_registry import graphql_router
 from restful_api.handler.health import health_check_router
 from restful_api.handler.order import order_router
+from restful_api.handler.order_detail import order_detail_router
 from restful_api.version import version_router
 from util.config_manager import ConfigManager, set_config_manager
 from util.db_manager import get_db_manager
@@ -45,7 +46,9 @@ class CommerceServer:
         self.app.include_router(health_check_router)
 
         self.app.include_router(version_router, prefix=RoutePrefix.API)
-        self.app.include_router(order_router, prefix=RoutePrefix.API)
+        self.app.include_router(order_router, prefix=RoutePrefix.API, tags=["order"])
+        self.app.include_router(order_detail_router, prefix=RoutePrefix.API, tags=["order_detail"])
+
         self.app.include_router(graphql_router, prefix=RoutePrefix.GRAPHQL, tags=["graphql"])
 
     def __setup_middleware(self):
