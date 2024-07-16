@@ -9,7 +9,7 @@ from sqlalchemy.future import select
 from repository.model.product import ProductDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.product import CreateProduct, Product, UpdateProduct
-from util.app_error import AppError, ErrorCode
+from util.app_error import AppError, ErrorCode, ServiceException
 from util.db_manager import DBManager
 
 
@@ -93,12 +93,12 @@ class ProductRepository:
     def _handle_not_found_error(self, product_id, e):
         err_msg = f"No product found with id {product_id}."
         log.error(err_msg)
-        raise AppError(message=err_msg, code=ErrorCode.NOT_FOUND) from e
+        raise ServiceException(message=err_msg, code=404) from e
 
     def _handle_integrity_error(self, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
-            raise AppError(
+            raise ServiceException(
                 message="Product name already exists.",
-                code=ErrorCode.DUPLICATE_ENTRY,
+                code=409,
             ) from e
         raise e from e
