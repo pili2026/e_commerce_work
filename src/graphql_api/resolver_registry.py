@@ -1,6 +1,5 @@
 import strawberry
 
-from graphql_api.resolver.authentication import AuthenticationMutation
 from graphql_api.resolver.user import UserMutation, UserQuery
 
 
@@ -10,5 +9,5 @@ class RootQuery(UserQuery):
 
 
 @strawberry.type
-class RootMutation(UserMutation, AuthenticationMutation):
+class RootMutation(UserMutation):
     pass
