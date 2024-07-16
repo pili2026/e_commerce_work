@@ -2,9 +2,10 @@ import logging
 from typing import Optional
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import ChunkedIteratorResult, Select, delete, select
 from sqlalchemy.exc import IntegrityError, NoResultFound
-
+from sqlalchemy.orm import selectinload
 
 from repository.model.order import OrderDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
@@ -23,18 +24,19 @@ class OrderRepository:
     async def get_order_list(self, order_id_list: Optional[UUID] = None) -> list[Order]:
         async with self.db_manager.get_async_session() as db_session:
             async with db_session.begin():
-                query: Select = select(OrderDBModel)
+                query: Select = select(OrderDBModel).options(selectinload(OrderDBModel.detail))
 
                 if order_id_list:
-                    query: Select = query.where(OrderDBModel.id.in_(order_id_list))
+                    query: Select = query.where(Order.id.in_(order_id_list))
 
                 result: ChunkedIteratorResult = await db_session.execute(query)
                 order_db_model_list: list[OrderDBModel] = result.scalars().all()
+
                 return [order_db_model.to_service_model() for order_db_model in order_db_model_list]
 
-    async def get_order(self, order_id: Optional[UUID] = None) -> Order:
+    async def get_order(self, order_id: Optional[UUID] = None, user_id: Optional[UUID] = None) -> Order:
         if not order_id:
-            raise AppError(
+            raise HTTPException(
                 code=ErrorCode.INVALID_FORMAT,
                 message="The order_id is required",
             )
@@ -42,7 +44,10 @@ class OrderRepository:
         async with self.db_manager.get_async_session() as db_session:
             try:
                 query: Select = select(OrderDBModel)
-                query: Select = query.filter(OrderDBModel.id == order_id)
+                if order_id:
+                    query: Select = query.filter(OrderDBModel.id == order_id)
+                if user_id:
+                    query: Select = query.filter(OrderDBModel.user_id == user_id)
 
                 result: ChunkedIteratorResult = await db_session.execute(query)
                 order_db_model: OrderDBModel = result.scalars().one()

@@ -14,16 +14,13 @@ order_router = APIRouter()
 
 @order_router.get("/order/list", response_model=list[OrderSchema])
 async def get_order_list(
-    order_id_list: Optional[list[UUID]] = Query(None), context: Context = Depends(get_order_service)
+    order_id_list: Optional[list[UUID]] = Query(None), order_service: OrderService = Depends(get_order_service)
 ):
-    order_service: OrderService = context.order_service
     order_list: list[Order] = await order_service.get_order_list(order_id_list)
     return order_list
 
 
 @order_router.get("/order/{order_id}", response_model=Optional[Order])
 async def get_order(order_id: UUID, order_service: OrderService = Depends(get_order_service)):
-    order = await order_service.get_order(order_id)
-    if order is None:
-        raise HTTPException(status_code=404, detail="Order not found")
+    order: Order = await order_service.get_order(order_id)
     return order

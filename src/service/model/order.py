@@ -18,7 +18,7 @@ class Order(BaseServiceModel):
     id: UUID = AUTO_GEN_UUID4_FIELD
     user_id: UUID
     status: OrderStatusEnum
-    # details: Optional[list[OrderDetail]]
+    detail: Optional[OrderDetail]
 
 
 class CreateOrder(BaseServiceModel):
@@ -28,4 +28,4 @@ class CreateOrder(BaseServiceModel):
 
 
 class UpdateOrder(BaseServiceModel):
-    details: Optional[list[UpdateOrderDetail]]
+    detail: Optional[list[UpdateOrderDetail]]

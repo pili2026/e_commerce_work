@@ -1,5 +1,7 @@
 from enum import Enum
 
+from fastapi import HTTPException
+
 
 class ErrorCode(Enum):
     INVALID_CREDENTIALS = "INVALID_CREDENTIALS"
@@ -19,3 +21,8 @@ class AppError(Exception):
         super().__init__(message)
         self.message = message
         self.code = code
+
+
+class ServiceException(HTTPException):
+    def __init__(self, message: str, code: int):
+        super().__init__(status_code=code, detail=message)

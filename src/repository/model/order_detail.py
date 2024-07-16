@@ -17,7 +17,7 @@ class OrderDetailDBModel(DBModelBase):
     quantity = Column(Integer, nullable=False)
     total_price = Column(Float, nullable=False)
 
-    order = relationship("OrderDBModel", passive_deletes=True, back_populates="details")
+    order = relationship("OrderDBModel", passive_deletes=True, back_populates="detail")
     product = relationship("ProductDBModel", passive_deletes=True, back_populates="order_details")
 
     def to_service_model(self) -> OrderDetail:

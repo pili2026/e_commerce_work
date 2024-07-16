@@ -16,7 +16,7 @@ from repository.order import OrderRepository
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.order import CreateOrder
 from service.model.order_detail import CreateOrderDetail, OrderDetail
-from util.app_error import AppError, ErrorCode
+from util.app_error import AppError, ErrorCode, ServiceException
 from util.db_manager import DBManager
 
 
@@ -87,11 +87,11 @@ class OrderDetailRepository:
 
         if not product:
             err_msg = f"No product found with product {product_name}."
-            raise HTTPException(detail=err_msg, status_code=404)
+            raise ServiceException(message=err_msg, code=404)
 
         if product.stock <= 0:
             err_msg = f"Product {product_name} is out of stock."
-            raise AppError(message=err_msg, code=ErrorCode.OUT_OF_STOCK)
+            raise ServiceException(message=err_msg, code=400)
 
         return product
 

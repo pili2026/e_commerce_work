@@ -15,12 +15,12 @@ class OrderDBModel(DBModelBase):
     status = Column(Enum(OrderStatusEnum, name="order_status_enum"), nullable=False)
 
     user = relationship("UserDBModel", passive_deletes=True, back_populates="orders")
-    details = relationship("OrderDetailDBModel", passive_deletes=True, back_populates="order")
+    detail = relationship("OrderDetailDBModel", uselist=False, passive_deletes=True, back_populates="order")
 
     def to_service_model(self) -> Order:
         return Order(
             id=self.id,
             user_id=self.user_id,
             status=self.status,
-            # details=[detail.to_service_model() for detail in self.details],
+            detail=self.detail.to_service_model(),
         )
