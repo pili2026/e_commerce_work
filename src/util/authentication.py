@@ -6,7 +6,6 @@ import jwt
 
 from restful_api.schema.authentication import oauth2_scheme
 from service.authentication import AuthenticationService, PayloadField
-from util.app_error import AppError, ErrorCode
 from util.dependency_injector import get_authentication_service
 
 

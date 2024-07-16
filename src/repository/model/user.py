@@ -16,6 +16,7 @@ class UserDBModel(DBModelBase):
     name = Column(String, nullable=True)
     role = Column(Enum(RoleNamesEnum, name="role_name_enum"), nullable=False)
 
+    role_permission = relationship("RolePermissionDBModel", back_populates="users")
     sessions = relationship("AuthSessionDBModel", cascade="all, delete", back_populates="user")
     orders = relationship("OrderDBModel", back_populates="user")
 

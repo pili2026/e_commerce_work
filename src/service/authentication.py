@@ -14,7 +14,7 @@ from repository.user import UserRepository
 from service.model.auth_payload import AuthPayload
 from service.model.auth_session import AuthSession, UpdateAuthSession
 from service.model.user import User
-from util.app_error import AppError, ErrorCode
+from util.app_error import AppError, ErrorCode, ServiceException
 from util.config_manager import ConfigManager
 
 
@@ -61,7 +61,6 @@ class AuthenticationService:
     async def logout(self, session_id: UUID) -> bool:
         result = await self.auth_session_repository.delete_auth_session(session_id)
         return result
-
 
     async def refresh_token(self, access_token: str, refresh_token: str) -> AuthPayload:
         refresh_token_payload = self.get_jwt_token_payload(refresh_token)
@@ -200,7 +199,7 @@ class AuthenticationService:
         )
 
     def __raise_invalid_credentials_error(self, message: Optional[str] = "Account not found or incorrect password."):
-        raise AppError(message=message, code=ErrorCode.INVALID_CREDENTIALS)
+        raise ServiceException(message=message, code=401)
 
     def __raise_invalid_format_error(self, message: Optional[str] = "Token validation failed: invalid format"):
         raise AppError(message=message, code=ErrorCode.INVALID_FORMAT)

@@ -9,7 +9,7 @@ from sqlalchemy.future import select
 from repository.model.user import UserDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.user import CreateUser, UpdateUser, User
-from util.app_error import AppError, ErrorCode
+from util.app_error import AppError, ErrorCode, ServiceException
 from util.db_manager import DBManager
 
 
@@ -29,6 +29,7 @@ class UserRepository:
                 if user_id_list:
                     query: Select = query.where(UserDBModel.id.in_(user_id_list))
 
+                # TODO: Display permission
                 result: ChunkedIteratorResult = await db_session.execute(query)
                 user_db_model: list[UserDBModel] = result.scalars().all()
                 return [user_db_model.to_service_model() for user_db_model in user_db_model]
@@ -93,12 +94,12 @@ class UserRepository:
     def _handle_not_found_error(self, user_id, e):
         err_msg = f"No user found with id {user_id}."
         log.error(err_msg)
-        raise AppError(message=err_msg, code=ErrorCode.NOT_FOUND) from e
+        raise ServiceException(message=err_msg, code=404) from e
 
     def _handle_integrity_error(self, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
-            raise AppError(
+            raise ServiceException(
                 message="User account already exists.",
-                code=ErrorCode.DUPLICATE_ENTRY,
+                code=409,
             ) from e
         raise e from e
