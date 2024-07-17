@@ -18,7 +18,7 @@ class User(BaseServiceModel):
     password: SecretStr
     name: Optional[str] = NAME_FIELD
     role: RoleNamesEnum
-    role_permission_list: list[RolePermission] = None
+    role_permission_list: Optional[list[RolePermission]] = None
 
 
 class CreateUser(BaseServiceModel):

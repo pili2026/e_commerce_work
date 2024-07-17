@@ -22,14 +22,6 @@ from util.db_manager import DBManager, get_db_manager
 log = logging.getLogger(__name__)
 
 
-def get_user_repository(db_manager: DBManager = Depends(get_db_manager)) -> UserRepository:
-    return UserRepository(db_manager)
-
-
-def get_user_service(user_repository: UserRepository = Depends(get_user_repository)) -> UserService:
-    return UserService(user_repository=user_repository)
-
-
 def get_role_permission_repository(db_manager: DBManager = Depends(get_db_manager)) -> RolePermissionRepository:
     return RolePermissionRepository(db_manager)
 
@@ -38,6 +30,17 @@ def get_role_permission_service(
     role_permission_repository: RolePermissionRepository = Depends(get_role_permission_repository),
 ) -> RolePermissionService:
     return RolePermissionService(role_permission_repository=role_permission_repository)
+
+
+def get_user_repository(
+    db_manager: DBManager = Depends(get_db_manager),
+    role_permission_repository: RolePermissionRepository = Depends(get_role_permission_repository),
+) -> UserRepository:
+    return UserRepository(db_manager=db_manager, role_permission_repository=role_permission_repository)
+
+
+def get_user_service(user_repository: UserRepository = Depends(get_user_repository)) -> UserService:
+    return UserService(user_repository=user_repository)
 
 
 async def get_role_permission_loader(

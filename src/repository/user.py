@@ -34,8 +34,19 @@ class UserRepository:
 
                 # TODO: Display permission
                 result: ChunkedIteratorResult = await db_session.execute(query)
-                user_db_model: list[UserDBModel] = result.scalars().all()
-                return [user_db_model.to_service_model() for user_db_model in user_db_model]
+                user_list_db_model: list[UserDBModel] = result.scalars().all()
+
+                user_list_model = []
+                for user_db_model in user_list_db_model:
+                    role_permission_list: list[RolePermission] = (
+                        await self.role_permission_repository.get_role_permission_list(
+                            db_session=db_session, role_list=[user_db_model.role]
+                        )
+                    )
+                    user_list_model.append(user_db_model.to_service_model(role_permission_list))
+
+                return user_list_model
+                # return [user_db_model.to_service_model() for user_db_model in user_list_db_model]
 
     async def get_user(self, user_id: Optional[UUID] = None, account: Optional[str] = None) -> User:
         if not user_id and not account:

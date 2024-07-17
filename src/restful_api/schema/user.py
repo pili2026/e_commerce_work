@@ -18,6 +18,7 @@ class User(BaseServiceModel):
     account: str
     name: Optional[str]
     role: RoleNamesEnum
+    role_permission_list: list[RolePermissionModel]
 
     # @strawberry.field
     # async def role_permission_list(self, info: Info) -> list[RolePermissionList]:

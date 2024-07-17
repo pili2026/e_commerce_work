@@ -23,7 +23,7 @@ async def get_user_list(
     user_service: UserService = Depends(get_user_service),
     _: dict = Depends(get_current_user),
 ):
-    user_list = await user_service.get_user_list(user_id_list=user_id_list)
+    user_list: list[User] = await user_service.get_user_list(user_id_list=user_id_list)
     return user_list
 
 
