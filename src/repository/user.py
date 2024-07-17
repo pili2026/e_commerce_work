@@ -8,8 +8,10 @@ from sqlalchemy.future import select
 
 from repository.model.user import UserDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
+from repository.role_permission import RolePermissionRepository
+from service.model.role_permission import RolePermission
 from service.model.user import CreateUser, UpdateUser, User
-from util.app_error import AppError, ErrorCode, ServiceException
+from util.app_error import ServiceException
 from util.db_manager import DBManager
 
 
@@ -18,8 +20,9 @@ log = logging.getLogger(__name__)
 
 class UserRepository:
 
-    def __init__(self, db_manager: DBManager):
+    def __init__(self, db_manager: DBManager, role_permission_repository: RolePermissionRepository):
         self.db_manager = db_manager
+        self.role_permission_repository = role_permission_repository
 
     async def get_user_list(self, user_id_list: Optional[UUID] = None) -> list[User]:
         async with self.db_manager.get_async_session() as db_session:
@@ -36,8 +39,8 @@ class UserRepository:
 
     async def get_user(self, user_id: Optional[UUID] = None, account: Optional[str] = None) -> User:
         if not user_id and not account:
-            raise AppError(
-                code=ErrorCode.INVALID_FORMAT,
+            raise ServiceException(
+                code=400,
                 message="At least one parameter (user_id, or account) must be provided",
             )
 
@@ -67,7 +70,12 @@ class UserRepository:
                         name=user.name,
                     )
                     db_session.add(user_db_model)
-                    return user_db_model.to_service_model()
+                    role_permission_list: list[RolePermission] = (
+                        await self.role_permission_repository.get_role_permission_list(
+                            db_session=db_session, role_list=[user_db_model.role]
+                        )
+                    )
+                    return user_db_model.to_service_model(role_permission_list)
             except IntegrityError as e:
                 self._handle_integrity_error(e)
 

@@ -1,9 +1,11 @@
+from typing import Optional
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import UUID as pgUUID
 from sqlalchemy.orm import relationship
 
 from repository.model.base import DBModelBase
 from service.model.role import RoleNamesEnum
+from service.model.role_permission import RolePermission
 from service.model.user import User
 
 
@@ -16,9 +18,16 @@ class UserDBModel(DBModelBase):
     name = Column(String, nullable=True)
     role = Column(Enum(RoleNamesEnum, name="role_name_enum"), nullable=False)
 
-    role_permission = relationship("RolePermissionDBModel", back_populates="users")
+    # role_permission = relationship("RolePermissionDBModel", back_populates="users")
     sessions = relationship("AuthSessionDBModel", cascade="all, delete", back_populates="user")
     orders = relationship("OrderDBModel", back_populates="user")
 
-    def to_service_model(self) -> User:
-        return User(id=self.id, account=self.account, password=self.password, name=self.name, role=self.role)
+    def to_service_model(self, role_permission_list: Optional[list[RolePermission]] = None) -> User:
+        return User(
+            id=self.id,
+            account=self.account,
+            password=self.password,
+            name=self.name,
+            role=self.role,
+            role_permission_list=role_permission_list,
+        )

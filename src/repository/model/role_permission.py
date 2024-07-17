@@ -16,7 +16,7 @@ class RolePermissionDBModel(DBModelBase):
     role = Column(Enum(RoleNamesEnum, name="role_name_enum"), nullable=False)
     permission = Column(Enum(PermissionNamesEnum, name="permission_name_enum"), nullable=False)
 
-    users = relationship("UserDBModel", back_populates="role_permission")
+    # users = relationship("UserDBModel", back_populates="role_permission")
 
     def to_service_model(self) -> RolePermission:
         return RolePermission(id=self.id, role=self.role, permission=self.permission)

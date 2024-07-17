@@ -4,6 +4,7 @@ from uuid import UUID
 
 from sqlalchemy import ChunkedIteratorResult, Select
 from sqlalchemy.exc import IntegrityError, MultipleResultsFound, NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from repository.model.role_permission import RolePermissionDBModel
@@ -22,15 +23,23 @@ class RolePermissionRepository:
     def __init__(self, db_manager: DBManager):
         self.db_manager = db_manager
 
-    async def get_role_permission_list(self, role_list: list[RoleNamesEnum] = None) -> list[RolePermission]:
-        async with self.db_manager.get_async_session() as db_session:
-            query: Select = select(RolePermissionDBModel)
-            if role_list:
-                query = query.where(RolePermissionDBModel.role.in_(role_list))
+    async def get_role_permission_list(
+        self, db_session: Optional[AsyncSession] = None, role_list: list[RoleNamesEnum] = None
+    ) -> list[RolePermission]:
+        if db_session is None:
+            async with self.db_manager.get_async_session() as session:
+                return await self._execute_query(session, role_list)
+        else:
+            return await self._execute_query(db_session, role_list)
 
-            result: ChunkedIteratorResult = await db_session.execute(query)
-            role_permissions_db_model: list[RolePermissionDBModel] = result.scalars().all()
-            return [role_permission.to_service_model() for role_permission in role_permissions_db_model]
+    async def _execute_query(self, session: AsyncSession, role_list: list[RoleNamesEnum]) -> list[RolePermission]:
+        query = select(RolePermissionDBModel)
+        if role_list:
+            query = query.where(RolePermissionDBModel.role.in_(role_list))
+
+        result: ChunkedIteratorResult = await session.execute(query)
+        role_permissions_db_model: list[RolePermissionDBModel] = result.scalars().all()
+        return [role_permission.to_service_model() for role_permission in role_permissions_db_model]
 
     async def get_role_permission(
         self,

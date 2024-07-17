@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from repository.model.base import Base
-from util.config_manager import get_config_manager, set_config_manager
+from util.config_manager import get_config_manager, set_config_manager, ConfigManager
 from util.db_manager import get_db_manager
 from util.logging_configurer import configure_logging
 
@@ -18,7 +18,11 @@ config = context.config
 x_argu = context.get_x_argument(as_dictionary=True)
 
 config_path = x_argu.get("config_path")
-config_manager = get_config_manager()
+if not config_path:
+    raise ValueError("Config path must be provided")
+
+# Initialize ConfigManager manually
+config_manager = ConfigManager(config_path)
 set_config_manager(config_manager)
 
 app_config = config_manager.get_config()

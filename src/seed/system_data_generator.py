@@ -13,7 +13,7 @@ from service.model.user import CreateUser
 from service.product import ProductService
 from service.role_permission import RolePermissionService
 from service.user import UserService
-from util.app_error import AppError, ErrorCode
+from util.app_error import AppError, ErrorCode, ServiceException
 from util.db_manager import get_db_manager
 
 
@@ -30,8 +30,8 @@ class AppDefaultDataGenerator:
 
     async def generate_app_default_data(self):
         log.info("Generating system data...")
-        await self.__generate_user_default_data()
         await self.__generate_role_permission_default_data()
+        await self.__generate_user_default_data()
         await self.__generate_product_default_data()
 
     async def __generate_user_default_data(self):
@@ -56,10 +56,11 @@ class AppDefaultDataGenerator:
             await self.__create_product(product)
 
     async def __create_user(self, user: CreateUser):
+        existing_user = None
         try:
             existing_user = await self.__user_service.get_user_by_account(user.account)
-        except AppError as e:
-            if e.code == ErrorCode.NOT_FOUND:
+        except ServiceException as e:
+            if e.status_code == 400:
                 existing_user = None
 
         if existing_user is None:
@@ -91,8 +92,8 @@ class AppDefaultDataGenerator:
     async def __create_product(self, product: CreateProduct):
         try:
             existing_product = await self.__product_service.get_product_by_name(product.name)
-        except AppError as e:
-            if e.code == ErrorCode.NOT_FOUND:
+        except ServiceException as e:
+            if e.status_code == 404:
                 existing_product = None
 
         if existing_product is None:
@@ -102,8 +103,8 @@ class AppDefaultDataGenerator:
 
 def get_app_default_data_generator():
     db_manager = get_db_manager()
-    user_repo = UserRepository(db_manager)
     role_permission_repo = RolePermissionRepository(db_manager)
+    user_repo = UserRepository(db_manager, role_permission_repo)
     product_repo = ProductRepository(db_manager)
     user_service = UserService(user_repo)
     role_permission_service = RolePermissionService(role_permission_repo)

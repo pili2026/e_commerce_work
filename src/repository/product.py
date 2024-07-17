@@ -35,8 +35,8 @@ class ProductRepository:
 
     async def get_product(self, product_id: Optional[UUID] = None, product_name: Optional[str] = None) -> Product:
         if not product_id and not product_name:
-            raise AppError(
-                code=ErrorCode.INVALID_FORMAT,
+            raise ServiceException(
+                code=400,
                 message="At least one parameter (product_id, or product_name) must be provided",
             )
 

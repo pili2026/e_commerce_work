@@ -5,6 +5,7 @@ from pydantic import Field, SecretStr
 
 from service.model.base import AUTO_GEN_UUID4_FIELD, NAME_FIELD, BaseServiceModel
 from service.model.role import RoleNamesEnum
+from service.model.role_permission import RolePermission
 
 
 ACCOUNT_FIELD = Field(min_length=1, max_length=20)
@@ -17,6 +18,7 @@ class User(BaseServiceModel):
     password: SecretStr
     name: Optional[str] = NAME_FIELD
     role: RoleNamesEnum
+    role_permission_list: list[RolePermission] = None
 
 
 class CreateUser(BaseServiceModel):
