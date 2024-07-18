@@ -1,7 +1,7 @@
 from functools import wraps
 
 from service.authentication import AuthenticationService, PayloadField
-from util.app_error import AppError, ErrorCode
+from util.app_error import ServiceException, ErrorCode
 
 
 def validate_jwt_token(func):
@@ -18,7 +18,7 @@ def validate_jwt_token(func):
         token_exists = await authentication_service.access_token_exists(session_id, jwt_token)
 
         if not token_exists:
-            raise AppError("Token is invalid.", code=ErrorCode.INVALID_SESSION)
+            raise ServiceException("Token is invalid.", code=ErrorCode.INVALID_SESSION)
 
         store_token_payload_in_context(info, payload)
 

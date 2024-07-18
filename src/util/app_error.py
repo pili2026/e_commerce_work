@@ -1,26 +1,19 @@
-from enum import Enum
+from enum import IntEnum
 
 from fastapi import HTTPException
 
 
-class ErrorCode(Enum):
-    INVALID_CREDENTIALS = "INVALID_CREDENTIALS"
-    INVALID_SESSION = "INVALID_SESSION"
-    SESSION_EXPIRED = "SESSION_EXPIRED"
-    DUPLICATE_ENTRY = "DUPLICATE_ENTRY"
-    NOT_FOUND = "NOT_FOUND"
-    INVALID_FORMAT = "INVALID_FORMAT"
-    SERVER_ERROR = "SERVER_ERROR"
+class ErrorCode(IntEnum):
+    INVALID_CREDENTIALS = 401  # Unauthorized
+    INVALID_SESSION = 401  # Unauthorized
+    SESSION_EXPIRED = 401  # Unauthorized
+    DUPLICATE_ENTRY = 409  # Conflict
+    NOT_FOUND = 404  # Not Found
+    INVALID_FORMAT = 400  # Bad Request
+    SERVER_ERROR = 500  # Internal Server Error
 
-    OUT_OF_STOCK = "OUT_OF_STOCK"
-    INSUFFICIENT_STOCK = "INSUFFICIENT_STOCK"
-
-
-class AppError(Exception):
-    def __init__(self, message: str, code: ErrorCode):
-        super().__init__(message)
-        self.message = message
-        self.code = code
+    OUT_OF_STOCK = 400
+    INSUFFICIENT_STOCK = 400
 
 
 class ServiceException(HTTPException):

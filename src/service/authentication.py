@@ -14,7 +14,7 @@ from repository.user import UserRepository
 from service.model.auth_payload import AuthPayload
 from service.model.auth_session import AuthSession, UpdateAuthSession
 from service.model.user import User
-from util.app_error import AppError, ErrorCode, ServiceException
+from util.app_error import ServiceException, ErrorCode, ServiceException
 from util.config_manager import ConfigManager
 
 
@@ -47,7 +47,7 @@ class AuthenticationService:
     async def login(self, account: str, password: str) -> AuthPayload:
         try:
             user: User = await self.user_repository.get_user(account=account)
-        except AppError:
+        except ServiceException:
             self.__raise_invalid_credentials_error()
 
         if not self.__is_password_correct(plain=password, hashed=user.password.get_secret_value()):
@@ -69,7 +69,7 @@ class AuthenticationService:
 
         try:
             auth_session = await self.auth_session_repository.get_auth_session(auth_session_id)
-        except AppError:
+        except ServiceException:
             self.__raise_invalid_session_error()
 
         # Check access_token and refresh_token are matched.
@@ -89,7 +89,7 @@ class AuthenticationService:
         try:
             auth_session: AuthSession = await self.auth_session_repository.get_auth_session(session_id)
             return auth_session.access_token == access_token
-        except AppError:
+        except ServiceException:
             return False
 
     def get_header_authorization(self, info: Info) -> str:
@@ -182,7 +182,7 @@ class AuthenticationService:
             )
 
             return updated_auth_session
-        except AppError:
+        except ServiceException:
             self.__raise_invalid_session_error()
 
     def __is_password_correct(self, plain: str, hashed: str) -> bool:
@@ -199,13 +199,13 @@ class AuthenticationService:
         )
 
     def __raise_invalid_credentials_error(self, message: Optional[str] = "Account not found or incorrect password."):
-        raise ServiceException(message=message, code=401)
+        raise ServiceException(message=message, code=ErrorCode.INVALID_CREDENTIALS)
 
     def __raise_invalid_format_error(self, message: Optional[str] = "Token validation failed: invalid format"):
-        raise AppError(message=message, code=ErrorCode.INVALID_FORMAT)
+        raise ServiceException(message=message, code=ErrorCode.INVALID_FORMAT)
 
     def __raise_invalid_session_error(self, message: Optional[str] = "Token validation failed: invalid session"):
-        raise AppError(message=message, code=ErrorCode.INVALID_SESSION)
+        raise ServiceException(message=message, code=ErrorCode.INVALID_SESSION)
 
     def __raise_session_expired_error(self, message: Optional[str] = "Token validation failed: session expired"):
-        raise AppError(message=message, code=ErrorCode.SESSION_EXPIRED)
+        raise ServiceException(message=message, code=ErrorCode.SESSION_EXPIRED)

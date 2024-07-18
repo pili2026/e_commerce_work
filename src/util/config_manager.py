@@ -3,7 +3,7 @@ import logging
 
 import yaml
 
-from util.app_error import AppError, ErrorCode
+from util.app_error import ServiceException, ErrorCode
 
 
 log = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def get_config_manager() -> ConfigManager:
     global __CONFIG_MANAGER
 
     if __CONFIG_MANAGER is None:
-        raise AppError(
+        raise ServiceException(
             message="ConfigManager has not been initialized yet.",
             code=ErrorCode.SERVER_ERROR,
         )

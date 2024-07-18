@@ -16,7 +16,7 @@ from repository.order import OrderRepository
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.order import CreateOrder
 from service.model.order_detail import CreateOrderDetail, OrderDetail
-from util.app_error import AppError, ErrorCode, ServiceException
+from util.app_error import ServiceException, ErrorCode, ServiceException
 from util.db_manager import DBManager
 
 
@@ -42,7 +42,7 @@ class OrderDetailRepository:
 
     async def get_order_detail(self, order_detail_id: Optional[UUID] = None) -> OrderDetail:
         if not order_detail_id:
-            raise AppError(
+            raise ServiceException(
                 code=ErrorCode.INVALID_FORMAT,
                 message="The order_detail_id is required",
             )
@@ -64,7 +64,7 @@ class OrderDetailRepository:
         try:
             if product.stock < order_detail.quantity:
                 err_msg = f"Not enough stock for product {order_detail.product_name}. Available: {product.stock}, Requested: {order_detail.quantity}."
-                raise AppError(message=err_msg, code=ErrorCode.INSUFFICIENT_STOCK)
+                raise ServiceException(message=err_msg, code=ErrorCode.INSUFFICIENT_STOCK)
 
             order_detail_db_model = OrderDetailDBModel(
                 id=order_detail.id,
@@ -87,11 +87,11 @@ class OrderDetailRepository:
 
         if not product:
             err_msg = f"No product found with product {product_name}."
-            raise ServiceException(message=err_msg, code=404)
+            raise ServiceException(message=err_msg, code=ErrorCode.NOT_FOUND)
 
         if product.stock <= 0:
             err_msg = f"Product {product_name} is out of stock."
-            raise ServiceException(message=err_msg, code=400)
+            raise ServiceException(message=err_msg, code=ErrorCode.OUT_OF_STOCK)
 
         return product
 
@@ -124,11 +124,11 @@ class OrderDetailRepository:
     def _handle_not_found_error(self, product_id, e):
         err_msg = f"No order detail found with id {product_id}."
         log.error(err_msg)
-        raise AppError(message=err_msg, code=ErrorCode.NOT_FOUND) from e
+        raise ServiceException(message=err_msg, code=ErrorCode.NOT_FOUND) from e
 
     def _handle_integrity_error(self, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
-            raise AppError(
+            raise ServiceException(
                 message="Order detail already exists.",
                 code=ErrorCode.DUPLICATE_ENTRY,
             ) from e

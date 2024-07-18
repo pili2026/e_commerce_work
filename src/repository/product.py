@@ -9,7 +9,7 @@ from sqlalchemy.future import select
 from repository.model.product import ProductDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.product import CreateProduct, Product, UpdateProduct
-from util.app_error import AppError, ErrorCode, ServiceException
+from util.app_error import ServiceException, ErrorCode, ServiceException
 from util.db_manager import DBManager
 
 
@@ -36,7 +36,7 @@ class ProductRepository:
     async def get_product(self, product_id: Optional[UUID] = None, product_name: Optional[str] = None) -> Product:
         if not product_id and not product_name:
             raise ServiceException(
-                code=400,
+                code=ErrorCode.NOT_FOUND,
                 message="At least one parameter (product_id, or product_name) must be provided",
             )
 
@@ -93,12 +93,12 @@ class ProductRepository:
     def _handle_not_found_error(self, product_id, e):
         err_msg = f"No product found with id {product_id}."
         log.error(err_msg)
-        raise ServiceException(message=err_msg, code=404) from e
+        raise ServiceException(message=err_msg, code=ErrorCode.NOT_FOUND) from e
 
     def _handle_integrity_error(self, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
             raise ServiceException(
                 message="Product name already exists.",
-                code=409,
+                code=ErrorCode.DUPLICATE_ENTRY,
             ) from e
         raise e from e

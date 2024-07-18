@@ -9,7 +9,7 @@ from sqlalchemy.future import select
 from repository.model.auth_session import AuthSessionDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.auth_session import AuthSession, UpdateAuthSession
-from util.app_error import AppError, ErrorCode
+from util.app_error import ServiceException, ErrorCode
 from util.db_manager import DBManager
 
 
@@ -77,17 +77,18 @@ class AuthSessionRepository:
         async with self.db_manager.get_async_session() as db_session:
             async with db_session.begin():
                 await db_session.execute(
-                    delete(AuthSessionDBModel).where(AuthSessionDBModel.refresh_token_expire_at < datetime.now()))
+                    delete(AuthSessionDBModel).where(AuthSessionDBModel.refresh_token_expire_at < datetime.now())
+                )
                 return True
 
     def _handle_not_found_error(self, auth_session_id, e):
         err_msg = f"No auth_session found with id {auth_session_id}"
         log.error(err_msg)
-        raise AppError(message=err_msg, code=ErrorCode.NOT_FOUND) from e
+        raise ServiceException(message=err_msg, code=ErrorCode.NOT_FOUND) from e
 
     def _handle_integrity_error(self, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
-            raise AppError(
+            raise ServiceException(
                 message="The auth_session already exists.",
                 code=ErrorCode.DUPLICATE_ENTRY,
             ) from e

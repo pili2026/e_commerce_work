@@ -6,7 +6,7 @@ from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
 
-from util.app_error import AppError, ErrorCode
+from util.app_error import ServiceException, ErrorCode
 from util.config_manager import ConfigManager, get_config_manager
 from util.db_manager import DBManager, get_db_manager
 
@@ -101,7 +101,7 @@ def get_db_migration_manager() -> DBMigrationManager:
         return __DB_MIGRATION_MANAGER
 
     if get_config_manager() is None:
-        raise AppError(
+        raise ServiceException(
             message="Can not initialize the DBMigrationManager, ConfigManager has not been initialized yet.",
             code=ErrorCode.SERVER_ERROR,
         )

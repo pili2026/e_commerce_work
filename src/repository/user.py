@@ -11,7 +11,7 @@ from repository.postgres_error_code.integrity_error_code import IntegrityErrorCo
 from repository.role_permission import RolePermissionRepository
 from service.model.role_permission import RolePermission
 from service.model.user import CreateUser, UpdateUser, User
-from util.app_error import ServiceException
+from util.app_error import ErrorCode, ServiceException
 from util.db_manager import DBManager
 
 
@@ -32,12 +32,12 @@ class UserRepository:
                 if user_id_list:
                     query: Select = query.where(UserDBModel.id.in_(user_id_list))
 
-                # TODO: Display permission
                 result: ChunkedIteratorResult = await db_session.execute(query)
                 user_list_db_model: list[UserDBModel] = result.scalars().all()
 
                 user_list_model = []
                 for user_db_model in user_list_db_model:
+                    # TODO: Need to improve
                     role_permission_list: list[RolePermission] = (
                         await self.role_permission_repository.get_role_permission_list(
                             db_session=db_session, role_list=[user_db_model.role]
@@ -51,7 +51,7 @@ class UserRepository:
     async def get_user(self, user_id: Optional[UUID] = None, account: Optional[str] = None) -> User:
         if not user_id and not account:
             raise ServiceException(
-                code=400,
+                code=ErrorCode.NOT_FOUND,
                 message="At least one parameter (user_id, or account) must be provided",
             )
 
@@ -113,12 +113,12 @@ class UserRepository:
     def _handle_not_found_error(self, user_id, e):
         err_msg = f"No user found with id {user_id}."
         log.error(err_msg)
-        raise ServiceException(message=err_msg, code=404) from e
+        raise ServiceException(message=err_msg, code=ErrorCode.NOT_FOUND) from e
 
     def _handle_integrity_error(self, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
             raise ServiceException(
                 message="User account already exists.",
-                code=409,
+                code=ErrorCode.DUPLICATE_ENTRY,
             ) from e
         raise e from e

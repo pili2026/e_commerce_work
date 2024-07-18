@@ -5,7 +5,6 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from graphql_api.schema_registry import graphql_router
 from restful_api.handler.authentication import authentication_router
 from restful_api.handler.health import health_check_router
 from restful_api.handler.order import order_router
@@ -52,8 +51,6 @@ class CommerceServer:
         self.app.include_router(product_router, prefix=RoutePrefix.API, tags=["product"])
         self.app.include_router(authentication_router, prefix=RoutePrefix.API, tags=["authentication"])
         self.app.include_router(user_router, prefix=RoutePrefix.API, tags=["user"])
-
-        self.app.include_router(graphql_router, prefix=RoutePrefix.GRAPHQL, tags=["graphql"])
 
     def __setup_middleware(self):
         self.app.add_middleware(

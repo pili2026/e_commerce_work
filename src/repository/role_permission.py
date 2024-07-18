@@ -11,7 +11,7 @@ from repository.model.role_permission import RolePermissionDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.role import RoleNamesEnum
 from service.model.role_permission import PermissionNamesEnum, RolePermission, UpdateRolePermission
-from util.app_error import AppError, ErrorCode
+from util.app_error import ServiceException, ErrorCode
 from util.db_manager import DBManager
 
 
@@ -48,7 +48,7 @@ class RolePermissionRepository:
         permission: Optional[PermissionNamesEnum] = None,
     ) -> RolePermission:
         if not role_permission_id and not role and not permission:
-            raise AppError(
+            raise ServiceException(
                 code=ErrorCode.INVALID_FORMAT,
                 message="At least one parameter (id, role, or permission) must be provided",
             )
@@ -103,16 +103,16 @@ class RolePermissionRepository:
     def _handle_not_found_error(self, role_permission_id, e):
         err_msg = f"No role_permission found with id {role_permission_id}"
         log.error(err_msg)
-        raise AppError(message=err_msg, code=ErrorCode.NOT_FOUND) from e
+        raise ServiceException(message=err_msg, code=ErrorCode.NOT_FOUND) from e
 
     def _handle_multiple_results_found_error(self, role_permission_id, e):
         err_msg = f"Multiple role_permissions found with id {role_permission_id}, which should be unique."
         log.error(err_msg)
-        raise AppError(message=err_msg, code=ErrorCode.DUPLICATE_ENTRY) from e
+        raise ServiceException(message=err_msg, code=ErrorCode.DUPLICATE_ENTRY) from e
 
     def _handle_integrity_error(self, role_permission, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
-            raise AppError(
+            raise ServiceException(
                 message=f"The id, {role_permission.id} already exists.",
                 code=ErrorCode.DUPLICATE_ENTRY,
             ) from e

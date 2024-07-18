@@ -1,7 +1,7 @@
 import logging
 from enum import Enum
 
-from util.app_error import AppError, ErrorCode
+from util.app_error import ServiceException, ErrorCode
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ class LogLevel(Enum):
         if level_str in LogLevel.__members__:
             return LogLevel[level_str]
 
-        raise AppError(
+        raise ServiceException(
             message=f"Unknown log level: {level_str}",
             code=ErrorCode.SERVER_ERROR,
         )

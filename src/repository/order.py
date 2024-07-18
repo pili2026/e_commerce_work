@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from repository.model.order import OrderDBModel
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.order import CreateOrder, Order
-from util.app_error import AppError, ErrorCode
+from util.app_error import ServiceException, ErrorCode, ServiceException
 from util.db_manager import DBManager
 
 
@@ -65,11 +65,11 @@ class OrderRepository:
     def _handle_not_found_error(self, order_id, e):
         err_msg = f"No order found with id {order_id}."
         log.error(err_msg)
-        raise AppError(message=err_msg, code=ErrorCode.NOT_FOUND) from e
+        raise ServiceException(message=err_msg, code=ErrorCode.NOT_FOUND) from e
 
     def _handle_integrity_error(self, e):
         if e.orig.pgcode == IntegrityErrorCode.UNIQUE_VIOLATION.value:
-            raise AppError(
+            raise ServiceException(
                 message="Order already exists.",
                 code=ErrorCode.DUPLICATE_ENTRY,
             ) from e
