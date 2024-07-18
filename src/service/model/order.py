@@ -2,13 +2,11 @@ from enum import StrEnum
 from uuid import UUID
 from typing import Optional
 
-import strawberry
 
 from service.model.base import AUTO_GEN_UUID4_FIELD, BaseServiceModel
 from service.model.order_detail import OrderDetail, UpdateOrderDetail
 
 
-@strawberry.enum
 class OrderStatusEnum(StrEnum):
     PROCESSING = "processing"
     CANCELLED = "cancelled"

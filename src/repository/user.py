@@ -57,15 +57,20 @@ class UserRepository:
 
         async with self.db_manager.get_async_session() as db_session:
             try:
-                query = select(UserDBModel)
+                query: Select = select(UserDBModel)
                 if user_id:
                     query = query.filter(UserDBModel.id == user_id)
                 if account:
                     query = query.filter(UserDBModel.account == account)
 
-                result = await db_session.execute(query)
+                result: ChunkedIteratorResult = await db_session.execute(query)
                 user_db_model: UserDBModel = result.scalars().one()
-                return user_db_model.to_service_model()
+                role_permission_list: list[RolePermission] = (
+                    await self.role_permission_repository.get_role_permission_list(
+                        db_session=db_session, role_list=[user_db_model.role]
+                    )
+                )
+                return user_db_model.to_service_model(role_permission_list=role_permission_list)
             except NoResultFound as e:
                 self._handle_not_found_error(user_id, e)
 

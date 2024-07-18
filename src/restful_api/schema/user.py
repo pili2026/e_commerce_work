@@ -2,11 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import Field, field_validator
-import strawberry
-from strawberry.types import Info
 
-from graphql_api.data_loader.role_permission_list_mapping_data_loader import RolePermissionLoader
-from graphql_api.schema.permission import RolePermissionList
 from service.model.base import BaseServiceModel
 from service.model.role import RoleNamesEnum
 from service.model.role_permission import RolePermission as RolePermissionModel
@@ -19,12 +15,6 @@ class User(BaseServiceModel):
     name: Optional[str]
     role: RoleNamesEnum
     role_permission_list: list[RolePermissionModel]
-
-    # @strawberry.field
-    # async def role_permission_list(self, info: Info) -> list[RolePermissionList]:
-    #     role_permission_loader: RolePermissionLoader = info.context.role_permission_loader
-    #     role_permission_list: list[RolePermissionModel] = await role_permission_loader.load(self.role)
-    #     return role_permission_list
 
 
 class CreateUserInput(BaseServiceModel):

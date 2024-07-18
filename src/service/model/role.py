@@ -1,9 +1,6 @@
 from enum import StrEnum
 
-import strawberry
 
-
-@strawberry.enum
 class RoleNamesEnum(StrEnum):
     MANAGER = "manager"
     CUSTOMER = "customer"

@@ -4,13 +4,14 @@ from fastapi import HTTPException
 
 
 class ErrorCode(IntEnum):
-    INVALID_CREDENTIALS = 401  # Unauthorized
-    INVALID_SESSION = 401  # Unauthorized
-    SESSION_EXPIRED = 401  # Unauthorized
-    DUPLICATE_ENTRY = 409  # Conflict
-    NOT_FOUND = 404  # Not Found
-    INVALID_FORMAT = 400  # Bad Request
-    SERVER_ERROR = 500  # Internal Server Error
+    INVALID_FORMAT = 400
+    INVALID_CREDENTIALS = 401
+    INVALID_SESSION = 401
+    SESSION_EXPIRED = 401
+    INVALID_PERMISSION = 403
+    NOT_FOUND = 404
+    DUPLICATE_ENTRY = 409
+    SERVER_ERROR = 500
 
     OUT_OF_STOCK = 400
     INSUFFICIENT_STOCK = 400

@@ -1,11 +1,13 @@
 from functools import wraps
-from typing import Annotated
+from typing import Annotated, Callable
 
 from fastapi import Depends, HTTPException, Request, status
 import jwt
 
 from restful_api.schema.authentication import oauth2_scheme
 from service.authentication import AuthenticationService, PayloadField
+from service.model.role import RoleNamesEnum
+from util.app_error import ErrorCode
 from util.dependency_injector import get_authentication_service
 
 
@@ -39,3 +41,12 @@ async def get_current_user(
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+def check_permissions(required_role: str) -> Callable:
+    def role_checker(current_user: dict = Depends(get_current_user)) -> dict:
+        if required_role not in current_user["role"]:
+            raise HTTPException(status_code=ErrorCode.INVALID_PERMISSION, detail="Operation not permitted")
+        return current_user
+
+    return role_checker

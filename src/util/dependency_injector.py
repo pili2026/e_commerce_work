@@ -2,7 +2,6 @@ import logging
 
 from fastapi import Depends
 
-from graphql_api.data_loader.role_permission_list_mapping_data_loader import RolePermissionLoader
 from repository.auth_session import AuthSessionRepository
 from repository.order import OrderRepository
 from repository.order_detail import OrderDetailRepository
@@ -41,12 +40,6 @@ def get_user_repository(
 
 def get_user_service(user_repository: UserRepository = Depends(get_user_repository)) -> UserService:
     return UserService(user_repository=user_repository)
-
-
-async def get_role_permission_loader(
-    role_permission_service: RolePermissionService = Depends(get_role_permission_service),
-) -> RolePermissionLoader:
-    return RolePermissionLoader(role_permission_service=role_permission_service)
 
 
 def get_product_repository(db_manager: DBManager = Depends(get_db_manager)) -> ProductRepository:

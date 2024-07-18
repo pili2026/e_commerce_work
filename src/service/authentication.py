@@ -13,6 +13,9 @@ from repository.model.base import get_utc_datetime_now_without_timezone
 from repository.user import UserRepository
 from service.model.auth_payload import AuthPayload
 from service.model.auth_session import AuthSession, UpdateAuthSession
+from service.model.permission import PermissionNamesEnum
+from service.model.role import RoleNamesEnum
+from service.model.role_permission import to_role_permission_dict
 from service.model.user import User
 from util.app_error import ServiceException, ErrorCode, ServiceException
 from util.config_manager import ConfigManager
@@ -30,6 +33,8 @@ class PayloadField(StrEnum):
     ISSUE_AT = "iat"  # Issue at
     EXPIRE_AT = "exp"  # Expire at
     SESSION_ID = "sid"  # Session ID
+    ROLE = "role"
+    PERMISSIONS = "permissions"
 
 
 class AuthenticationService:
@@ -53,8 +58,8 @@ class AuthenticationService:
         if not self.__is_password_correct(plain=password, hashed=user.password.get_secret_value()):
             self.__raise_invalid_credentials_error()
 
-        auth_session = await self._create_auth_session(user.id)
-        auth_payload = self.__make_auth_payload(auth_session)
+        auth_session: AuthSession = await self._create_auth_session(user)
+        auth_payload: AuthPayload = self.__make_auth_payload(auth_session)
 
         return auth_payload
 
@@ -122,13 +127,21 @@ class AuthenticationService:
         return payload
 
     def _create_jwt_token(
-        self, user_id: UUID, issue_at: datetime, lifetime: timedelta, session_id: UUID
+        self,
+        user_id: UUID,
+        issue_at: datetime,
+        lifetime: timedelta,
+        session_id: UUID,
+        role: RoleNamesEnum,
+        permissions: list[PermissionNamesEnum],
     ) -> Tuple[str, datetime]:
         payload = {
-            PayloadField.SUBJECT.value: str(user_id),
-            PayloadField.ISSUE_AT.value: issue_at,
-            PayloadField.EXPIRE_AT.value: issue_at + lifetime,
-            PayloadField.SESSION_ID.value: str(session_id),
+            PayloadField.SUBJECT: str(user_id),
+            PayloadField.ISSUE_AT: issue_at,
+            PayloadField.EXPIRE_AT: issue_at + lifetime,
+            PayloadField.SESSION_ID: str(session_id),
+            PayloadField.ROLE: role,
+            PayloadField.PERMISSIONS: permissions,
         }
         secret_key = self.config_manager.get_config()["SECRET_KEY"]
         algorithm = self.config_manager.get_config()["JWT_ALGORITHM"]
@@ -136,19 +149,32 @@ class AuthenticationService:
         jwt_token: str = jwt.encode(payload, secret_key, algorithm=algorithm)
         return jwt_token, payload[PayloadField.EXPIRE_AT.value]
 
-    async def _create_auth_session(self, user_id: UUID) -> AuthSession:
+    async def _create_auth_session(self, user: User) -> AuthSession:
         session_id = uuid4()
         issue_at = get_utc_datetime_now_without_timezone()
+        role_permission_list: list[dict] = to_role_permission_dict(user.role_permission_list)
+
+        # TODO: Create jwt token parameter can convert to obj
         access_token, access_token_expire_at = self._create_jwt_token(
-            user_id, issue_at, ACCESS_TOKEN_LIFETIME, session_id
+            user_id=user.id,
+            issue_at=issue_at,
+            lifetime=ACCESS_TOKEN_LIFETIME,
+            session_id=session_id,
+            role=user.role,
+            permissions=role_permission_list,
         )
         refresh_token, refresh_token_expire_at = self._create_jwt_token(
-            user_id, issue_at, REFRESH_TOKEN_LIFETIME, session_id
+            user_id=user.id,
+            issue_at=issue_at,
+            lifetime=REFRESH_TOKEN_LIFETIME,
+            session_id=session_id,
+            role=user.role,
+            permissions=role_permission_list,
         )
 
         auth_session: AuthSession = AuthSession(
             id=session_id,
-            user_id=user_id,
+            user_id=user.id,
             issue_at=issue_at,
             access_token=access_token,
             access_token_expire_at=access_token_expire_at,

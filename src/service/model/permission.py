@@ -1,9 +1,6 @@
 from enum import StrEnum
 
-import strawberry
 
-
-@strawberry.enum
 class PermissionNamesEnum(StrEnum):
     CREATE_PRODUCT = "create_product"
     READ_PRODUCT = "read_product"

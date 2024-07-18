@@ -1,10 +1,12 @@
 from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 
 from restful_api.schema.product import CreateProductInput, Product as ProductSchema, UpdateProductInput
 from service.model.product import CreateProduct, Product, UpdateProduct
+from service.model.role import RoleNamesEnum
 from service.product import ProductService
+from util.authentication import check_permissions
 from util.dependency_injector import get_product_service
 
 
@@ -26,7 +28,11 @@ async def get_product(product_id: UUID, product_service: ProductService = Depend
 
 
 @product_router.post("/product", response_model=ProductSchema, status_code=status.HTTP_201_CREATED)
-async def create_product(product: CreateProductInput, product_service: ProductService = Depends(get_product_service)):
+async def create_product(
+    product: CreateProductInput,
+    product_service: ProductService = Depends(get_product_service),
+    _: dict = Depends(check_permissions(RoleNamesEnum.MANAGER.value)),  # TODO:Confirm the usage principle of StrEnum
+):
     create_product_model = CreateProduct(name=product.name, price=product.price, stock=product.stock)
     created_product: Product = await product_service.create_product(create_product_model)
     return created_product
