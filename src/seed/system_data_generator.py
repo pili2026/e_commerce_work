@@ -13,7 +13,7 @@ from service.model.user import CreateUser
 from service.product import ProductService
 from service.role_permission import RolePermissionService
 from service.user import UserService
-from util.app_error import ServiceException, ErrorCode, ServiceException
+from util.app_error import ServiceException, ErrorCode
 from util.db_manager import get_db_manager
 
 
@@ -73,7 +73,7 @@ class AppDefaultDataGenerator:
                 role_permission.role, role_permission.permission
             )
         except ServiceException as e:
-            if e.code == ErrorCode.NOT_FOUND:
+            if e.status_code == ErrorCode.NOT_FOUND:
                 existing_role_permission = None
 
         if existing_role_permission is None:
@@ -91,7 +91,7 @@ class AppDefaultDataGenerator:
 
     async def __create_product(self, product: CreateProduct):
         try:
-            existing_product = await self.__product_service.get_product_by_name(product.name)
+            existing_product = await self.__product_service.get_product(product_name=product.name)
         except ServiceException as e:
             if e.status_code == ErrorCode.NOT_FOUND:
                 existing_product = None

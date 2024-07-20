@@ -15,7 +15,7 @@ from repository.model.product import ProductDBModel
 from repository.order import OrderRepository
 from repository.postgres_error_code.integrity_error_code import IntegrityErrorCode
 from service.model.order import CreateOrder
-from service.model.order_detail import CreateOrderDetail, OrderDetail
+from service.model.order_detail import CreateOrderDetail, OrderDetail, UpdateOrderDetail
 from util.app_error import ServiceException, ErrorCode, ServiceException
 from util.db_manager import DBManager
 
@@ -97,7 +97,7 @@ class OrderDetailRepository:
 
     async def insert_order_with_detail(
         self, create_order: CreateOrder, create_order_detail: CreateOrderDetail
-    ) -> OrderDBModel:
+    ) -> OrderDetail:
         async with self.db_manager.get_async_session() as db_session:
             async with db_session.begin():
                 try:
@@ -120,6 +120,41 @@ class OrderDetailRepository:
                     return order_detail_db_model.to_service_model()
                 except IntegrityError as e:
                     self._handle_integrity_error(e)
+
+    async def update_detail_with_product(
+        self, order_detail_id: UUID, update_order_detail: UpdateOrderDetail
+    ) -> OrderDetail:
+        async with self.db_manager.get_async_session() as db_session:
+            async with db_session.begin():
+                try:
+                    query: Select = select(OrderDetailDBModel).filter(OrderDetailDBModel.id == order_detail_id)
+                    result: ChunkedIteratorResult = await db_session.execute(query)
+                    order_detail_db_model: OrderDetailDBModel = result.scalars().one()
+
+                    old_product_name: str = order_detail_db_model.product_name
+                    old_quantity: int = order_detail_db_model.quantity
+
+                    # Update the old product stock
+                    old_product_query: Select = select(ProductDBModel).filter(ProductDBModel.name == old_product_name)
+                    old_product_result: ChunkedIteratorResult = await db_session.execute(old_product_query)
+                    old_product: ProductDBModel = old_product_result.scalars().one()
+                    old_product.stock += old_quantity
+
+                    # Update the OrderDetail
+                    order_detail_db_model.product_name = update_order_detail.product_name
+                    order_detail_db_model.quantity = update_order_detail.quantity
+
+                    # Update the new product stock
+                    new_product_query = select(ProductDBModel).filter(
+                        ProductDBModel.name == update_order_detail.product_name
+                    )
+                    new_product_result: ChunkedIteratorResult = await db_session.execute(new_product_query)
+                    new_product: ProductDBModel = new_product_result.scalars().one()
+                    new_product.stock -= update_order_detail.quantity
+
+                    return order_detail_db_model.to_service_model()
+                except NoResultFound as e:
+                    self._handle_not_found_error(order_detail_id, e)
 
     def _handle_not_found_error(self, product_id, e):
         err_msg = f"No order detail found with id {product_id}."

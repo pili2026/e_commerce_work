@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, ForeignKey
+from sqlalchemy import Column, Enum, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID as pgUUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -16,6 +16,8 @@ class OrderDBModel(DBModelBase):
 
     user = relationship("UserDBModel", passive_deletes=True, back_populates="orders")
     detail = relationship("OrderDetailDBModel", uselist=False, passive_deletes=True, back_populates="order")
+
+    __table_args__ = (Index("idx_user_id", "user_id"),)
 
     def to_service_model(self) -> Order:
         return Order(

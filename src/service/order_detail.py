@@ -2,7 +2,7 @@ from typing import Optional
 from uuid import UUID
 from repository.order_detail import OrderDetailRepository
 from service.model.order import CreateOrder
-from service.model.order_detail import CreateOrderDetail, OrderDetail
+from service.model.order_detail import CreateOrderDetail, OrderDetail, UpdateOrderDetail
 
 
 class OrderDetailService:
@@ -22,8 +22,13 @@ class OrderDetailService:
     async def create_order_detail(
         self, create_order_detail: CreateOrderDetail, create_order: CreateOrder
     ) -> OrderDetail:
-        # Use token to get user_id
         created_order: OrderDetail = await self.order_detail_repository.insert_order_with_detail(
             create_order=create_order, create_order_detail=create_order_detail
         )
         return created_order
+
+    async def update_order_detail(self, order_detail_id: UUID, update_order_detail: UpdateOrderDetail) -> OrderDetail:
+        updated_order_detail: OrderDetail = await self.order_detail_repository.update_detail_with_product(
+            order_detail_id=order_detail_id, update_order_detail=update_order_detail
+        )
+        return updated_order_detail

@@ -8,8 +8,10 @@ from service.model.order_detail import OrderDetail, UpdateOrderDetail
 
 
 class OrderStatusEnum(StrEnum):
-    PROCESSING = "processing"
-    CANCELLED = "cancelled"
+    DONE = "Done"
+    PROCESSING = "Processing"
+    CANCEL = "Cancel"
+    CANCELLED = "Cancelled"
 
 
 class Order(BaseServiceModel):
@@ -21,9 +23,9 @@ class Order(BaseServiceModel):
 
 class CreateOrder(BaseServiceModel):
     id: UUID = AUTO_GEN_UUID4_FIELD
-    user_id: UUID = UUID("be91692a-a0c9-42bd-a4fb-c8f7f3bae470")
+    user_id: UUID
     status: OrderStatusEnum = OrderStatusEnum.PROCESSING
 
 
 class UpdateOrder(BaseServiceModel):
-    detail: Optional[list[UpdateOrderDetail]]
+    status: OrderStatusEnum

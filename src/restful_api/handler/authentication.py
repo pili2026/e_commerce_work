@@ -41,5 +41,7 @@ async def refresh_token(
 ):
     header_auth: str = request.headers.get("Authorization")
     access_token: str = authentication_service.get_jwt_token(header_auth)
-    auth_payload: AuthPayload = await authentication_service.refresh_token(access_token, refresh_token)
+    auth_payload: AuthPayload = await authentication_service.refresh_token(
+        access_token=access_token, refresh_token=refresh_token
+    )
     return auth_payload

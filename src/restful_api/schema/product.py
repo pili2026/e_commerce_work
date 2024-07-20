@@ -7,6 +7,7 @@ class ProductBase(BaseServiceModel):
     name: str
     price: float
     stock: int
+    total: int
 
 
 class Product(ProductBase):

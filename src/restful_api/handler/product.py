@@ -23,7 +23,7 @@ async def get_product_list(
 
 @product_router.get("/product/{product_id}", response_model=ProductSchema)
 async def get_product(product_id: UUID, product_service: ProductService = Depends(get_product_service)):
-    product: Product = await product_service.get_product_by_id(product_id)
+    product: Product = await product_service.get_product(product_id=product_id)
     return product
 
 
@@ -40,7 +40,10 @@ async def create_product(
 
 @product_router.put("/product/{product_id}", response_model=ProductSchema)
 async def update_product(
-    product_id: UUID, product: UpdateProductInput, product_service: ProductService = Depends(get_product_service)
+    product_id: UUID,
+    product: UpdateProductInput,
+    product_service: ProductService = Depends(get_product_service),
+    _: dict = Depends(check_permissions(RoleNamesEnum.MANAGER.value)),
 ):
     update_product_model = UpdateProduct(name=product.name, price=product.price, stock=product.stock)
     updated_product: Product = await product_service.update_product(
@@ -50,6 +53,10 @@ async def update_product(
 
 
 @product_router.delete("/product/{product_id}", response_model=bool)
-async def delete_product(product_id: UUID, product_service: ProductService = Depends(get_product_service)):
+async def delete_product(
+    product_id: UUID,
+    product_service: ProductService = Depends(get_product_service),
+    _: dict = Depends(check_permissions(RoleNamesEnum.MANAGER.value)),
+):
     result: bool = await product_service.delete_product(product_id)
     return result

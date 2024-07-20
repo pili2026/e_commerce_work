@@ -13,6 +13,7 @@ class ProductDBModel(DBModelBase):
     name = Column(String, nullable=False, unique=True)
     price = Column(Float, nullable=False)
     stock = Column(Integer, nullable=False)
+    total = Column(Integer, nullable=False)
 
     order_details = relationship("OrderDetailDBModel", passive_deletes=True, back_populates="product")
 

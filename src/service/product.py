@@ -10,12 +10,8 @@ class ProductService:
     def __init__(self, product_repository: ProductRepository):
         self.product_repository = product_repository
 
-    async def get_product_by_id(self, product_id: UUID) -> Product:
-        product: Product = await self.product_repository.get_product(product_id=product_id)
-        return product
-
-    async def get_product_by_name(self, product_name: str) -> Product:
-        product: Product = await self.product_repository.get_product(product_name=product_name)
+    async def get_product(self, product_id: Optional[UUID] = None, product_name: Optional[str] = None) -> Product:
+        product: Product = await self.product_repository.get_product(product_id=product_id, product_name=product_name)
         return product
 
     async def get_product_list(self, product_id_list: Optional[list[UUID]] = None) -> list[Product]:

@@ -50,3 +50,11 @@ def check_permissions(required_role: str) -> Callable:
         return current_user
 
     return role_checker
+
+
+# TODO: Maybe I shouldn't put this here
+def check_status_permission(role: str, order_status: str) -> None:
+    if role == RoleNamesEnum.CUSTOMER.value and order_status != "Cancel":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Customers can only update the status to 'Cancel'."
+        )

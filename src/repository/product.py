@@ -59,10 +59,7 @@ class ProductRepository:
             try:
                 async with db_session.begin():
                     product_db_model = ProductDBModel(
-                        id=product.id,
-                        name=product.name,
-                        stock=product.stock,
-                        price=product.price,
+                        id=product.id, name=product.name, stock=product.stock, price=product.price, total=product.total
                     )
                     db_session.add(product_db_model)
                     return product_db_model.to_service_model()
@@ -73,13 +70,14 @@ class ProductRepository:
         async with self.db_manager.get_async_session() as db_session:
             async with db_session.begin():
                 try:
-                    query = select(ProductDBModel).filter(ProductDBModel.id == product_id)
-                    result = await db_session.execute(query)
+                    query: Select = select(ProductDBModel).filter(ProductDBModel.id == product_id)
+                    result: ChunkedIteratorResult = await db_session.execute(query)
                     product_db_model: ProductDBModel = result.scalars().one()
 
                     product_db_model.name = update_product.name
                     product_db_model.price = update_product.price
                     product_db_model.stock = update_product.stock
+                    product_db_model.total = update_product.total
                     return product_db_model.to_service_model()
                 except NoResultFound as e:
                     self._handle_not_found_error(product_id, e)

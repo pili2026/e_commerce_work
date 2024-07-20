@@ -4,6 +4,7 @@ from enum import StrEnum
 from uuid import UUID
 
 from restful_api.schema.order_detail import OrderDetail
+from service.model.base import BaseServiceModel
 
 
 class OrderStatusEnum(StrEnum):
@@ -16,3 +17,7 @@ class Order(BaseModel):
     user_id: UUID
     status: OrderStatusEnum
     detail: Optional[OrderDetail]
+
+
+class UpdateOrderInput(BaseServiceModel):
+    status: OrderStatusEnum
