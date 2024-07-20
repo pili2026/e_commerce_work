@@ -13,6 +13,7 @@ from repository.model.base import get_utc_datetime_now_without_timezone
 from repository.user import UserRepository
 from service.model.auth_payload import AuthPayload
 from service.model.auth_session import AuthSession, UpdateAuthSession
+from service.model.authentication import Payload
 from service.model.permission import PermissionNamesEnum
 from service.model.role import RoleNamesEnum
 from service.model.role_permission import to_role_permission_dict
@@ -68,9 +69,9 @@ class AuthenticationService:
         return result
 
     async def refresh_token(self, access_token: str, refresh_token: str) -> AuthPayload:
-        refresh_token_payload = self.get_jwt_token_payload(refresh_token)
-        auth_session_id = refresh_token_payload[PayloadField.SESSION_ID.value]
-        auth_session_user_id = refresh_token_payload[PayloadField.SUBJECT.value]
+        refresh_token_payload: Payload = self.get_jwt_token_payload(refresh_token)
+        auth_session_id = refresh_token_payload.SESSION_ID
+        auth_session_user_id = refresh_token_payload.SUBJECT
 
         try:
             auth_session = await self.auth_session_repository.get_auth_session(auth_session_id)
@@ -113,18 +114,31 @@ class AuthenticationService:
         jwt_token = header_authorization[len(bearer_prefix) :]
         return jwt_token
 
-    def get_jwt_token_payload(self, token: str) -> dict:
+    def get_jwt_token_payload(self, token: str) -> Payload:
         secret_key: str = self.config_manager.get_config()["SECRET_KEY"]
         algorithm: str = self.config_manager.get_config()["JWT_ALGORITHM"]
 
         try:
-            payload = jwt.decode(token, secret_key, algorithms=[algorithm])
+            payload: dict = jwt.decode(token, secret_key, algorithms=[algorithm])
+            payload_model: Payload = self.__create_payload_model(payload=payload)
         except jwt.ExpiredSignatureError:
             self.__raise_session_expired_error()
         except jwt.InvalidTokenError:
             self.__raise_invalid_session_error()
 
-        return payload
+        return payload_model
+
+    @staticmethod
+    def __create_payload_model(payload: dict) -> Payload:
+        payload_model = Payload(
+            SUBJECT=payload["sub"],
+            ISSUE_AT=payload["iat"],
+            EXPIRE_AT=payload["exp"],
+            SESSION_ID=payload["sid"],
+            ROLE=payload["role"],
+            PERMISSIONS=payload["permissions"],
+        )
+        return payload_model
 
     def _create_jwt_token(
         self,

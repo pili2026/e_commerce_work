@@ -1,8 +1,9 @@
 from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
 from restful_api.schema.order import Order as OrderSchema, UpdateOrderInput
+from service.model.authentication import Payload
 from service.model.order import Order, UpdateOrder
 from service.model.role import RoleNamesEnum
 from service.order import OrderService
@@ -18,11 +19,11 @@ order_router = APIRouter()
 async def get_order_list(
     order_id_list: Optional[list[UUID]] = None,
     order_service: OrderService = Depends(get_order_service),
-    current_user: dict = Depends(get_current_user),
+    current_user: Payload = Depends(get_current_user),
 ):
-    if RoleNamesEnum.CUSTOMER.value in current_user["role"]:
-        order_list: list[Order] = await order_service.get_order_list(user_id=[current_user["sub"]])
-    elif RoleNamesEnum.MANAGER.value in current_user["role"]:
+    if RoleNamesEnum.CUSTOMER.value == current_user.ROLE:
+        order_list: list[Order] = await order_service.get_order_list(user_id=[current_user.SUBJECT])
+    elif RoleNamesEnum.MANAGER.value == current_user.ROLE:
         order_list: list[Order] = await order_service.get_order_list(order_id_list=order_id_list)
     else:
         raise ServiceException(status_code=ErrorCode.INVALID_PERMISSION, detail="Operation not permitted")
@@ -34,11 +35,11 @@ async def get_order_list(
 async def get_order(
     order_id: UUID,
     order_service: OrderService = Depends(get_order_service),
-    current_user: dict = Depends(get_current_user),
+    current_user: Payload = Depends(get_current_user),
 ):
     order: Order = await order_service.get_order(order_id)
 
-    if RoleNamesEnum.CUSTOMER.value in current_user["role"] and order.user_id != current_user["sub"]:
+    if RoleNamesEnum.CUSTOMER.value == current_user.ROLE and order.user_id != current_user.SUBJECT:
         raise ServiceException(status_code=ErrorCode.INVALID_PERMISSION, detail="Operation not permitted")
 
     return order
@@ -49,10 +50,10 @@ async def update_order(
     order_id: UUID,
     order: UpdateOrderInput,
     order_service: OrderService = Depends(get_order_service),
-    current_user: dict = Depends(check_permissions(RoleNamesEnum.MANAGER.value)),
+    current_user: Payload = Depends(check_permissions(RoleNamesEnum.MANAGER.value)),
 ):
 
-    role: str = current_user.get("role")
+    role: str = current_user.ROLE
     check_status_permission(role=role, order_status=order.status)
 
     update_order_model = UpdateOrder(status=order.status)
@@ -64,7 +65,7 @@ async def update_order(
 async def delete_order(
     order_id: UUID,
     order_service: OrderService = Depends(get_order_service),
-    _: dict = Depends(check_permissions(RoleNamesEnum.MANAGER.value)),
+    _: Payload = Depends(check_permissions(RoleNamesEnum.MANAGER.value)),
 ):
     result: bool = await order_service.delete_order(order_id=order_id)
     return result

@@ -5,6 +5,7 @@ from restful_api.schema.order_detail import (
     CreateOrderDetailInput as CreateOrderDetailInputSchema,
     UpdateOrderDetailInput,
 )
+from service.model.authentication import Payload
 from service.model.order import CreateOrder
 from service.model.order_detail import CreateOrderDetail, OrderDetail, UpdateOrderDetail
 from service.model.role import RoleNamesEnum
@@ -20,9 +21,9 @@ order_detail_router = APIRouter()
 async def create_order_detail(
     create_order_detail: CreateOrderDetailInputSchema,
     order_detail_service: OrderDetailService = Depends(get_order_detail_service),
-    current_user: dict = Depends(check_permissions(RoleNamesEnum.CUSTOMER.value)),
+    current_user: Payload = Depends(check_permissions(RoleNamesEnum.CUSTOMER.value)),
 ):
-    create_order: CreateOrder = CreateOrder(user_id=current_user["sub"])
+    create_order: CreateOrder = CreateOrder(user_id=current_user.SUBJECT)
     create_order_detail = CreateOrderDetail(
         product_name=create_order_detail.product_name, quantity=create_order_detail.quantity
     )

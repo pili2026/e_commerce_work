@@ -4,7 +4,7 @@ from typing import Optional
 
 
 from service.model.base import AUTO_GEN_UUID4_FIELD, BaseServiceModel
-from service.model.order_detail import OrderDetail, UpdateOrderDetail
+from service.model.order_detail import OrderDetail
 
 
 class OrderStatusEnum(StrEnum):

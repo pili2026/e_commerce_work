@@ -8,6 +8,7 @@ from restful_api.schema.user import (
     User as UserSchema,
 )
 
+from service.model.authentication import Payload
 from service.model.user import CreateUser, UpdateUser, User
 from service.user import UserService
 from util.authentication import get_current_user
@@ -21,7 +22,7 @@ user_router = APIRouter()
 async def get_user_list(
     user_id_list: Optional[list[UUID]] = None,
     user_service: UserService = Depends(get_user_service),
-    _: dict = Depends(get_current_user),
+    _: Payload = Depends(get_current_user),
 ):
     user_list: list[User] = await user_service.get_user_list(user_id_list=user_id_list)
     return user_list
@@ -31,7 +32,7 @@ async def get_user_list(
 async def get_user(
     user_id: UUID,
     user_service: UserService = Depends(get_user_service),
-    _: dict = Depends(get_current_user),
+    _: Payload = Depends(get_current_user),
 ):
     user = await user_service.get_user_by_id(user_id=user_id)
     return user
@@ -41,7 +42,7 @@ async def get_user(
 async def create_user(
     user: CreateUserInputSchema,
     user_service: UserService = Depends(get_user_service),
-    _: dict = Depends(get_current_user),
+    _: Payload = Depends(get_current_user),
 ):
     create_user_model = CreateUser(
         account=user.account,
@@ -58,7 +59,7 @@ async def update_user(
     user_id: UUID,
     user: UpdateUserInputSchema,
     user_service: UserService = Depends(get_user_service),
-    _: dict = Depends(get_current_user),
+    _: Payload = Depends(get_current_user),
 ):
     update_user_model = UpdateUser(name=user.name, role=user.role)
     updated_user: User = await user_service.update_user(user_id=user_id, update_user=update_user_model)
@@ -69,7 +70,7 @@ async def update_user(
 async def delete_user(
     user_id: UUID,
     user_service: UserService = Depends(get_user_service),
-    _: dict = Depends(get_current_user),
+    _: Payload = Depends(get_current_user),
 ):
     result: bool = await user_service.delete_user(user_id=user_id)
     return result

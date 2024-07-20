@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from restful_api.schema.authentication import AuthPayload as AuthPayloadSchema
-from service.authentication import AuthenticationService, PayloadField
+from service.authentication import AuthenticationService
 from service.model.auth_payload import AuthPayload
 
+from service.model.authentication import Payload
 from util.authentication import get_current_user
 from util.dependency_injector import get_authentication_service
 
@@ -24,11 +25,11 @@ async def login(
 @authentication_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     request: Request,
-    _: dict = Depends(get_current_user),
+    _: Payload = Depends(get_current_user),
     authentication_service: AuthenticationService = Depends(get_authentication_service),
 ):
-    token_payload: dict = request.state.token_payload
-    access_token: str = token_payload[PayloadField.SESSION_ID.value]
+    token_payload: Payload = request.state.token_payload
+    access_token: str = token_payload.SESSION_ID
     await authentication_service.logout(session_id=UUID(access_token))
 
 
@@ -36,7 +37,7 @@ async def logout(
 async def refresh_token(
     request: Request,
     refresh_token: str,
-    _: dict = Depends(get_current_user),
+    _: Payload = Depends(get_current_user),
     authentication_service: AuthenticationService = Depends(get_authentication_service),
 ):
     header_auth: str = request.headers.get("Authorization")
