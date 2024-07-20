@@ -17,7 +17,7 @@ from service.model.permission import PermissionNamesEnum
 from service.model.role import RoleNamesEnum
 from service.model.role_permission import to_role_permission_dict
 from service.model.user import User
-from util.app_error import ServiceException, ErrorCode, ServiceException
+from util.app_error import ServiceException, ErrorCode
 from util.config_manager import ConfigManager
 
 
