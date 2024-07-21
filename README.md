@@ -63,8 +63,8 @@ Afterwards, you can perform operations with the corresponding permissions in the
 ## Using Postman for API Testing
 We have provided two files for Postman to help you test the APIs:
 
-* A Postman collection: e_commerce_collection.json
-* A Postman environment: e_commerce_environment.json
+* A Postman collection: `e_commerce_collection.json`
+* A Postman environment: `e_commerce_environment.json`
 
 ### Import the Collection and Environment into Postman
 1. Open Postman.
