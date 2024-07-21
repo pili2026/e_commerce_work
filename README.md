@@ -97,7 +97,14 @@ When we develop locally, we need the fundamental services, such as database. Her
 
 This command will run timescaledb with latest version of DB schema.
 
-### Run the web server only
+### Clone project
+```
+git clone https://github.com/pili2026/e_commerce_work.git
+cd e_commerce_work
+```
+### Run the web server only by docker-compose
+`docker-compose -f docker-compose-local.yml up web_api_server`
+### Run the web server only by Debug mode
 *  Install related packages:
 ```
 pip install -r requirements.txt
@@ -137,9 +144,6 @@ Authentication can be done in two ways:
 2. Get a token to operate the API.
 
 Afterwards, you can perform operations with the corresponding permissions in the API documentation.
-
-
-### Interactive POST Man
 
 
 ### Run unit test
