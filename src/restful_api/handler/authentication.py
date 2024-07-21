@@ -24,12 +24,10 @@ async def login(
 
 @authentication_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
-    request: Request,
-    _: Payload = Depends(get_current_user),
+    current_user: Payload = Depends(get_current_user),
     authentication_service: AuthenticationService = Depends(get_authentication_service),
 ):
-    token_payload: Payload = request.state.token_payload
-    access_token: str = token_payload.SESSION_ID
+    access_token: str = current_user.SESSION_ID
     await authentication_service.logout(session_id=UUID(access_token))
 
 

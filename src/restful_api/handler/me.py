@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from restful_api.schema.user import User as UserSchema
 from service.model.authentication import Payload
 from service.user import UserService
@@ -10,10 +10,9 @@ me_router = APIRouter()
 
 @me_router.get("/me", response_model=UserSchema)
 async def get_me(
-    request: Request,
     user_service: UserService = Depends(get_user_service),
-    _: Payload = Depends(get_current_user),
+    current_user: Payload = Depends(get_current_user),
 ):
-    user_id = request.state.token_payload.SYBJECT
+    user_id = current_user.SUBJECT
     user = await user_service.get_user_by_id(user_id=user_id)
     return user

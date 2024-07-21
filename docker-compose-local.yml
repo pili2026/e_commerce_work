@@ -1,0 +1,57 @@
+version: "3.8"
+services:
+  timescaledb:
+    container_name: timescaledb
+    image: timescale/timescaledb:2.11.1-pg15
+    environment:
+      POSTGRES_DB: commerce
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: default1234
+      POSTGRES_CONFIG_MAX_LOCKS_PER_TRANSACTION: "128"
+    volumes:
+      - ./timescaledb_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - e_commerce_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U default -d commerce && psql -U default -d commerce -c 'SELECT 1'"]
+      interval: 1s
+      timeout: 5s
+      retries: 100
+      start_period: 10s
+  db_migration:
+    container_name: db_migration
+    build: .
+    image: e_commerce:latest
+    environment:
+      - APP_CONFIG=./res/config-local-docker.yml
+    volumes:
+      - .:/app
+      - ./res/config-local-docker.yml:/etc/app_config.yml
+    entrypoint: ["./docker_entrypoint/db_migration_entrypoint.sh"]
+    networks:
+      - e_commerce_network
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+  web_api_server:
+    container_name: web_api_server
+    build: .
+    image: e_commerce:latest
+    environment:
+      - APP_CONFIG=./res/config-local-docker.yml
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./res/config-local-docker.yml:/etc/app_config.yml
+    entrypoint: ["./docker_entrypoint/web_api_server_entrypoint.sh"]
+    networks:
+      - e_commerce_network
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+networks:
+  e_commerce_network:
+    driver: bridge
