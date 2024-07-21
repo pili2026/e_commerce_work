@@ -60,6 +60,31 @@ Authentication can be done in two ways:
 
 Afterwards, you can perform operations with the corresponding permissions in the API documentation.
 
+## Using Postman for API Testing
+We have provided two files for Postman to help you test the APIs:
+
+* A Postman collection: e_commerce_collection.json
+* A Postman environment: e_commerce_environment.json
+
+### Import the Collection and Environment into Postman
+1. Open Postman.
+2. Click the `Import` button in the top left corner.
+3. Select the `Upload Files` tab.
+4. Click Choose Files and select `e_commerce_collection.json` and `e_commerce_environment.json` from your file system.
+5. Click the `Import` button to import the files.
+
+### Configure the Environment
+1. Go to the `Environments` tab on the left sidebar.
+2. Find the imported environment `e_commerce_environment` and select it.
+3. Make sure the environment variables are correctly set up, particularly the `host` variable, which should point to your local server (e.g., http://localhost:8000).
+4. Click `Save` to save any changes.
+
+### Run the Collection
+1. Go to the `Collections` tab on the left sidebar.
+2. Find the imported collection `e_commerce_collection`.
+3. Click the `Run` button to execute the collection requests.
+
+
 ## Project Architecture
 
 ```
