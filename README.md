@@ -35,8 +35,9 @@ Some APIs require **authentication (login)** to obtain a **token** before they c
 
 #### Authentication
 
-When the service is started via Docker Compose, two users are created by default:
+When the service is started via Docker Compose, two users and two products are created by default:
 ```
+# Users
 Role: manager
 Account: manager
 Password: manager1234
@@ -44,6 +45,17 @@ Password: manager1234
 Role: customer
 Account: customer
 Password: customer1234
+
+# Products
+Name: Router
+Price: 20
+Stock: 10
+Total: 10
+
+Name: Switch
+Price: 10
+Stock: 10
+Total: 10
 ```
 
 Authentication can be done in two ways:
