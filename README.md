@@ -75,14 +75,14 @@ Afterwards, you can perform operations with the corresponding permissions in the
 ## Using Postman for API Testing
 We have provided two files for Postman to help you test the APIs:
 
-* A Postman collection: `e_commerce_collection.json`
+* A Postman collection: `FastAPI Collection.postman_collection.json`
 * A Postman environment: `e_commerce_environment.json`
 
 ### Import the Collection and Environment into Postman
 1. Open Postman.
 2. Click the `Import` button in the top left corner.
 3. Select the `Upload Files` tab.
-4. Click Choose Files and select `e_commerce_collection.json` and `e_commerce_environment.json` from your file system.
+4. Click Choose Files and select `FastAPI Collection.postman_collection.json` and `e_commerce_environment.json` from your file system.
 5. Click the `Import` button to import the files.
 
 ### Configure the Environment
